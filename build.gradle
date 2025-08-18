@@ -12,6 +12,10 @@ sourceCompatibility = 11
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
 
+allure {
+    version = '2.20.1'
+}
+
 repositories {
     mavenCentral()
 }
