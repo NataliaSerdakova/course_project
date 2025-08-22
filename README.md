@@ -45,7 +45,7 @@
 ## Установка и запуск
 
 - git clone https://github.com/NataliaSerdakova/course_project
-- сколинрованный файл открыть в Intellij Idea
+- склонированный файл открыть в Intellij Idea
 - в терминале командой docker compose up запустить контейнер
 - в Dbeaver создать новое соединение с базой данной PostgreSQL, данные для подключения находяться в файле docker-compose.yml
 - в терминале командой java -jar ./artifacts/aqa-shop.jar запустить файл приложения
