@@ -89,7 +89,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getDeclinedCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.expectSuccessMessage();
+        purchaseFormPage.expectFailureMessage();
         assertTrue(SQLHelper.countPayments() > initialPaymentsCount,
                 "В таблице payment_entity должны появиться новые записи");
         assertTrue(SQLHelper.countOrders() > initialOrdersCount,
