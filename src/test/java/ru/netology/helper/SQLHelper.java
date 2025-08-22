@@ -3,15 +3,20 @@ package ru.netology.helper;
 
 import java.sql.*;
 
+import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.Value;
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class SQLHelper {
     private static final QueryRunner QUERY_RUNNER = new QueryRunner();
@@ -20,7 +25,7 @@ public class SQLHelper {
     }
 
     private static Connection getConn() throws SQLException {
-        return DriverManager.getConnection(System.getProperty("db.url"), "user", "qwerty123");
+        return DriverManager.getConnection("jdbc:postgresql://localhost:5432/db", "user", "qwerty123");
     }
 
     @SneakyThrows
@@ -75,29 +80,56 @@ public class SQLHelper {
         }
     }
 
+    @SneakyThrows
+    public static Optional<CreditRequestEntity> findPaymentByStatus(String status) {
+        String query = "SELECT * FROM credit_request_entity WHERE status = ?";
+        try (var conn = getConn()) {
+            CreditRequestEntity credit = QUERY_RUNNER.query(conn, query, new BeanHandler<>(CreditRequestEntity.class), status);
+            return Optional.ofNullable(credit);
+        }
+    }
 
-    @Value
+    public static boolean isCreditRecorded(String expectedStatus) {
+        return findPaymentByStatus(expectedStatus).isPresent();
+    }
+
+    @SneakyThrows
+    public static Optional<PaymentEntity> findPaymentByAmountAndStatus(double amount, String status) {
+        String query = "SELECT * FROM payment_entity WHERE amount = ? AND status = ?";
+        try (var conn = getConn()) {
+            PaymentEntity payment = QUERY_RUNNER.query(conn, query, new BeanHandler<>(PaymentEntity.class), amount, status);
+            return Optional.ofNullable(payment);
+        }
+    }
+
+    public static boolean isPaymentRecorded(double expectedAmount, String expectedStatus) {
+        return findPaymentByAmountAndStatus(expectedAmount, expectedStatus).isPresent();
+    }
+
+
+    @Data
     public static class PaymentEntity {
-        Long id;
+        String id;
         Double amount;
         String created;
         String status;
-        Long transaction_id;
+        String transaction_id;
     }
 
-    @Value
+    @Data
     public static class OrderEntity {
-        Long id;
+        String id;
         String created;
-        Long credit_id;
-        Long payment_id;
+        String credit_id;
+        String payment_id;
     }
 
-    @Value
+    @Data
     public static class CreditRequestEntity {
-        Long id;
-        Long bank_id;
+        String id;
+        String bank_id;
         String created;
         String status;
     }
 }
+
