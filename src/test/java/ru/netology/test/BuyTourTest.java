@@ -47,7 +47,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getApprovedCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.expectSuccessMessage();
+        purchaseFormPage.expectSuccessMessage("Операция одобрена Банком.");
         assertTrue(SQLHelper.countPayments() > initialPaymentsCount,
                 "В таблице payment_entity должны появиться новые записи");
         assertTrue(SQLHelper.countOrders() > initialOrdersCount,
@@ -69,7 +69,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getApprovedCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.expectSuccessMessage();
+        purchaseFormPage.expectSuccessMessage("Операция одобрена Банком.");
         assertTrue(SQLHelper.countCredit() > initialCreditCount,
                 "В таблице credit_request_entity должны появиться новые записи");
         assertTrue(SQLHelper.countOrders() > initialOrdersCount,
@@ -89,7 +89,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getDeclinedCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.expectFailureMessage();
+        purchaseFormPage.expectFailureMessage("Ошибка! Банк отказал в проведении операции.");
         assertTrue(SQLHelper.countPayments() > initialPaymentsCount,
                 "В таблице payment_entity должны появиться новые записи");
         assertTrue(SQLHelper.countOrders() > initialOrdersCount,
@@ -109,7 +109,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getDeclinedCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.expectFailureMessage();
+        purchaseFormPage.expectFailureMessage("Ошибка! Банк отказал в проведении операции.");
         assertTrue(SQLHelper.countCredit() > initialCreditCount,
                 "В таблице credit_request_entity должны появиться новые записи");
         assertTrue(SQLHelper.countOrders() > initialOrdersCount,
@@ -127,7 +127,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.expectFailureMessage();
+        purchaseFormPage.expectFailureMessage("Ошибка! Банк отказал в проведении операции.");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(несуществующий номер карты)
@@ -136,7 +136,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.expectFailureMessage();
+        purchaseFormPage.expectFailureMessage("Ошибка! Банк отказал в проведении операции.");
     }
 
     //Покупка тура с неправильным вводом карт(1 цифра в поле номер карты)
@@ -145,13 +145,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCardOneDigitCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
-
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     /// /Покупка тура в кредит с неправильным вводом карт(1 цифра в поле номер карты)
@@ -160,40 +154,30 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCardOneDigitCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура с неправильным вводом карт(17 цифр в поле номер карты)
     @Test
     void testTourPurchaseWishAnIncorrectCardSeventeenDigit() {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCardSeventeenDigitCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = null;
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectCardSeventeenDigitCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredCardNumber = purchaseFormPage.getCardNumberFieldValue();
+        assertEquals(cardInfo.getNumber().substring(0, 19), enteredCardNumber,
+                "Поле для номера карты отбрасывает лишнюю цифру.");
     }
+
 
     //Покупка тура в кредит с неправильным вводом карт(17 цифр в поле номер карты)
     @Test
     void testTourPurchaseWishAnIncorrectCardSeventeenDigitOnCredit() {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCardSeventeenDigitCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = null;
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectCardSeventeenDigitCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredCardNumber = purchaseFormPage.getCardNumberFieldValue();
+        assertEquals(cardInfo.getNumber().substring(0, 19), enteredCardNumber,
+                "Поле для номера карты отбрасывает лишнюю цифру.");
     }
 
     //Покупка тура с неправильным вводом карт(пустое поле номер карты)
@@ -202,12 +186,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCardEmptyFieldCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(пустое поле номер карты)
@@ -216,40 +195,27 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCardEmptyFieldCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура с неправильным вводом карт(спецсимволы в поле номер карты)
     @Test
     void testTourPurchaseWishAnIncorrectCardSpecialCharacters() {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCardSpecialCharactersCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectCardSpecialCharactersCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredCardNumber = purchaseFormPage.getCardNumberFieldValue();
+        assertTrue(enteredCardNumber.isEmpty(), "В поле номер карты не вводяться специальные символы.");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(спецсимволы в поле номер карты)
     @Test
     void testTourPurchaseWishAnIncorrectCardSpecialCharactersOnCredit() {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCardSpecialCharactersCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectCardSpecialCharactersCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredCardNumber = purchaseFormPage.getCardNumberFieldValue();
+        assertTrue(enteredCardNumber.isEmpty(), "В поле номер карты не вводяться специальные символы.");
     }
 
     //Покупка тура с неправильнным вводом данных карт(несуществующий месяц)
@@ -258,12 +224,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectMonthCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getExpirationDateIncorrectErrorText();
-
-        String actualErrorText = purchaseFormPage.getExpirationDateIncorrectErrorText();
-        String expectedErrorText = "Неверно указан срок действия карты";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkExpirationDateIncorrectError("Неверно указан срок действия карты");
     }
 
     /// /Покупка тура в кредит с неправильнным вводом данных карт(несуществующий месяц)
@@ -272,12 +233,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectMonthCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getExpirationDateIncorrectErrorText();
-
-        String actualErrorText = purchaseFormPage.getExpirationDateIncorrectErrorText();
-        String expectedErrorText = "Неверно указан срок действия карты";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkExpirationDateIncorrectError("Неверно указан срок действия карты");
     }
 
     //Покупка тура с неправильнным вводом данных карт(одна цифра в поле месяц)
@@ -286,12 +242,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectMonthOneDigitCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     /// /Покупка тура в кредит с неправильным вводом карт(1 цифра в поле месяц)
@@ -300,12 +251,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectMonthOneDigitCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура с неправильнным вводом данных карт(пустое поле месяц)
@@ -314,12 +260,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectMonthEmptyFieldCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(пустое поле месяц)
@@ -328,67 +269,49 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectMonthEmptyFieldCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура с неправильнным вводом данных карт(3 цифры в поле месяц)
     @Test
     void testTourPurchaseWishAnIncorrectMonthThreeDigit() {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectMonthThreeDigitCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = null;
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectMonthThreeDigitCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredMonth = purchaseFormPage.getExpiryMonthFieldValue();
+        assertEquals(cardInfo.getMonth().substring(0, 2), enteredMonth,
+                "Поле для месяца отбрасывает лишнюю цифру.");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(3 цифры в поле месяц)
     @Test
     void testTourPurchaseWishAnIncorrectMonthThreeDigitOnCredit() {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectMonthThreeDigitCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = null;
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectMonthThreeDigitCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredMonth = purchaseFormPage.getExpiryMonthFieldValue();
+        assertEquals(cardInfo.getMonth().substring(0, 2), enteredMonth,
+                "Поле для месяца отбрасывает лишнюю цифру.");
     }
 
     //Покупка тура с неправильнным вводом данных карт(введение спецсимволов в поле месяц)
     @Test
     void testTourPurchaseWishAnIncorrectMonthSpecialCharacters() {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectMonthSpecialCharactersCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectMonthSpecialCharactersCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredMonth = purchaseFormPage.getExpiryMonthFieldValue();
+        assertTrue(enteredMonth.isEmpty(), "В поле месяц не вводяться специальные символы.");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(введение спецсимволов в поле месяц)
     @Test
     void testTourPurchaseWishAnIncorrectMonthSpecialCharactersOnCredit() {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectMonthSpecialCharactersCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectMonthSpecialCharactersCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredMonth = purchaseFormPage.getExpiryMonthFieldValue();
+        assertTrue(enteredMonth.isEmpty(), "В поле месяц не вводяться специальные символы.");
     }
 
     //Покупка тура с неправильным вводом данных карт(прошедший год)
@@ -397,13 +320,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectLastYearCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getExpirationDateIncorrectErrorText();
-
-        String actualErrorText = purchaseFormPage.getValidityPeriodErrorText();
-        String expectedErrorText = "Истёк срок действия карты";
-
-        assertEquals(expectedErrorText, actualErrorText);
-
+        purchaseFormPage.checkValidityPeriodError("Истёк срок действия карты");
     }
 
     /// /Покупка тура в кредит с неправильнным вводом данных карт(прошедший год)
@@ -412,12 +329,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectLastYearCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getExpirationDateIncorrectErrorText();
-
-        String actualErrorText = purchaseFormPage.getValidityPeriodErrorText();
-        String expectedErrorText = "Истёк срок действия карты";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkValidityPeriodError("Истёк срок действия карты");
     }
 
     //Покупка тура с неправильным вводом данных карт(пустое поле год)
@@ -426,12 +338,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectYearEmptyFieldCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(пустое поле год)
@@ -440,12 +347,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectYearEmptyFieldCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура с неправильным вводом данных карт(1 цифра в поле год)
@@ -454,12 +356,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectYearOneDigitCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     /// /Покупка тура в кредит с неправильным вводом карт(1 цифра в поле год)
@@ -468,68 +365,49 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectYearOneDigitCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура с неправильным вводом данных карт(3 цифры в поле год)
     @Test
     void testTourPurchaseWishAnIncorrectYearThreeDigit() {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectYearThreeDigitCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getValidityPeriodErrorText();
-        String expectedErrorText = "Истёк срок действия карты";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectYearThreeDigitCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredYear = purchaseFormPage.getExpiryYearFieldValue();
+        assertEquals(cardInfo.getYear().substring(0, 2), enteredYear,
+                "Поле для года отбрасывает лишнюю цифру.");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(3 цифры в поле год)
     @Test
     void testTourPurchaseWishAnIncorrectYearThreeDigitOnCredit() {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectYearThreeDigitCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getValidityPeriodErrorText();
-        String expectedErrorText = "Истёк срок действия карты";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectYearThreeDigitCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredYear = purchaseFormPage.getExpiryYearFieldValue();
+        assertEquals(cardInfo.getYear().substring(0, 2), enteredYear,
+                "Поле для года отбрасывает лишнюю цифру.");
     }
 
     //Покупка тура с неправильным вводом данных карт(спецсимволы в поле год)
     @Test
     void testTourPurchaseWishAnIncorrectYearSpecialCharacters() {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectYearSpecialCharactersCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectYearSpecialCharactersCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredYear = purchaseFormPage.getExpiryYearFieldValue();
+        assertTrue(enteredYear.isEmpty(), "В поле год не вводяться специальные символы.");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(спецсимволы в поле год)
     @Test
     void testTourPurchaseWishAnIncorrectYearSpecialCharactersOnCredit() {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectYearSpecialCharactersCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectYearSpecialCharactersCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredYear = purchaseFormPage.getExpiryYearFieldValue();
+        assertTrue(enteredYear.isEmpty(), "В поле год не вводяться специальные символы.");
     }
 
     //Покупка тура с неправильным вводом данных карт(поле владелец на кирилице)
@@ -538,12 +416,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectOwnerInCyrillicCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(поле владелец на кирилице)
@@ -552,12 +425,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectOwnerInCyrillicCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура с неправильным вводом данных карт(поле владелец не заполнено)
@@ -566,12 +434,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectOwnerEmptyFieldCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getFieldIsRequiredErrorText();
-
-        String actualErrorText = purchaseFormPage.getFieldIsRequiredErrorText();
-        String expectedErrorText = "Поле обязательно для заполнения";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkFieldIsRequiredError("Поле обязательно для заполнения");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(поле владелец не заполнено)
@@ -580,40 +443,27 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectOwnerEmptyFieldCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getFieldIsRequiredErrorText();
-
-        String actualErrorText = purchaseFormPage.getFieldIsRequiredErrorText();
-        String expectedErrorText = "Поле обязательно для заполнения";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkFieldIsRequiredError("Поле обязательно для заполнения");
     }
 
     //Покупка тура с неправильным вводом данных карт(спецсимволы поле владелец)
     @Test
     void testTourPurchaseWishAnIncorrectOwnerSpecialCharacters() {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectOwnerSpecialCharactersCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectOwnerSpecialCharactersCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredOwner = purchaseFormPage.getHolderNameFieldValue();
+        assertTrue(enteredOwner.isEmpty(), "В поле владелец не вводяться специальные символы.");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(спецсимволы поле владелец)
     @Test
     void testTourPurchaseWishAnIncorrectOwnerSpecialCharactersOnCredit() {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectOwnerSpecialCharactersCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectOwnerSpecialCharactersCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredOwner = purchaseFormPage.getHolderNameFieldValue();
+        assertTrue(enteredOwner.isEmpty(), "В поле владелец не вводяться специальные символы.");
     }
 
     //Покупка тура с неправильным вводом данных карт(одна буква в поле владелец)
@@ -622,12 +472,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectOwnerOneLetterCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(одна буква в поле владелец)
@@ -636,40 +481,29 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectOwnerOneLetterCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура с неправильным вводом данных карт(много букв в поле владелец)
     @Test
     void testTourPurchaseWishAnIncorrectOwnerManyLetter() {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectOwnerManyLetterCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectOwnerManyLetterCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredOwner = purchaseFormPage.getHolderNameFieldValue();
+        assertEquals(cardInfo.getUser().substring(0, 50), enteredOwner,
+                "Поле для ладельца отбрасывает лишнюю букву.");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(много букв в поле владелец)
     @Test
     void testTourPurchaseWishAnIncorrectOwnerManyLetterOnCredit() {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectOwnerManyLetterCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectOwnerManyLetterCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredOwner = purchaseFormPage.getHolderNameFieldValue();
+        assertEquals(cardInfo.getUser().substring(0, 50), enteredOwner,
+                "Поле для ладельца отбрасывает лишнюю букву.");
     }
 
     //Покупка тура с неправильным вводом данных карт(cvc пустое поле)
@@ -678,12 +512,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCvcEmptyFieldCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(cvc пустое поле)
@@ -692,12 +521,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCvcEmptyFieldCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура с неправильным вводом данных карт(две цифры в поле cvc)
@@ -706,12 +530,7 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCvcTwoDigitCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(две цифры в поле cvc)
@@ -720,68 +539,49 @@ public class BuyTourTest {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCvcTwoDigitCardInfo());
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
     }
 
     //Покупка тура с неправильным вводом данных карт(четыре цифры в поле cvc)
     @Test
     void testTourPurchaseWishAnIncorrectCvcFourDigit() {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCvcFourDigitCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = null;
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectCvcFourDigitCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredCvc = purchaseFormPage.getCvcFieldValue();
+        assertEquals(cardInfo.getUser().substring(0, 3), enteredCvc,
+                "Поле для Cvc отбрасывает лишнюю ифру.");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(четыре цифры в поле cvc)
     @Test
     void testTourPurchaseWishAnIncorrectCvcFourDigitOnCredit() {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCvcFourDigitCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = null;
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectCvcFourDigitCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredCvc = purchaseFormPage.getCvcFieldValue();
+        assertEquals(cardInfo.getUser().substring(0, 3), enteredCvc,
+                "Поле для Cvc отбрасывает лишнюю ифру.");
     }
 
     //Покупка тура с неправильным вводом данных карт(спецсимволы в поле cvc)
     @Test
     void testTourPurchaseWishAnIncorrectCvcSpecialCharacters() {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCvcSpecialCharactersCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectCvcSpecialCharactersCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredCvc = purchaseFormPage.getCvcFieldValue();
+        assertTrue(enteredCvc.isEmpty(), "В поле Cvc не вводяться специальные символы.");
     }
 
     //Покупка тура в кредит с неправильным вводом карт(спецсимволы в поле cvc)
     @Test
     void testTourPurchaseWishAnIncorrectCvcSpecialCharactersOnCredit() {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
-        purchaseFormPage.fillCardDetails(DataHelper.getIncorrectCvcSpecialCharactersCardInfo());
-        purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
+        DataHelper.CardInfo cardInfo = DataHelper.getIncorrectCvcSpecialCharactersCardInfo();
+        purchaseFormPage.fillCardDetails(cardInfo);
+        String enteredCvc = purchaseFormPage.getCvcFieldValue();
+        assertTrue(enteredCvc.isEmpty(), "В поле Cvc не вводяться специальные символы.");
     }
 
     //Покупка тура без заполнения полей
@@ -789,18 +589,8 @@ public class BuyTourTest {
     void testTourPurchaseWishAnEmptyFields() {
         purchaseFormPage = tourPurchasePage.clickBuyButton();
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-        purchaseFormPage.getFieldIsRequiredErrorText();
-
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
-
-        String actualErrorText2 = purchaseFormPage.getFieldIsRequiredErrorText();
-        String expectedErrorText2 = "Поле обязательно для заполнения";
-
-        assertEquals(expectedErrorText2, actualErrorText2);
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
+        purchaseFormPage.checkFieldIsRequiredError("Поле обязательно для заполнения");
     }
 
     //Покупка тура в кредит без заполнения полей
@@ -808,20 +598,18 @@ public class BuyTourTest {
     void testTourPurchaseWishAnEmptyFieldsOnCredit() {
         purchaseFormPage = tourPurchasePage.clickBuyOnCreditButton();
         purchaseFormPage.submitForm();
-        purchaseFormPage.getInvalidFormatErrorText();
-        purchaseFormPage.getFieldIsRequiredErrorText();
+        purchaseFormPage.checkInvalidFormatError("Неверный формат");
+        purchaseFormPage.checkFieldIsRequiredError("Поле обязательно для заполнения");
 
-        String actualErrorText = purchaseFormPage.getInvalidFormatErrorText();
-        String expectedErrorText = "Неверный формат";
-
-        assertEquals(expectedErrorText, actualErrorText);
-
-        String actualErrorText2 = purchaseFormPage.getFieldIsRequiredErrorText();
-        String expectedErrorText2 = "Поле обязательно для заполнения";
-
-        assertEquals(expectedErrorText2, actualErrorText2);
     }
+
+
 }
+
+
+
+
+
 
 
 

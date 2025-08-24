@@ -5,8 +5,7 @@ import ru.netology.helper.DataHelper;
 
 import java.time.Duration;
 
-import static com.codeborne.selenide.Condition.disappear;
-import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selectors.byCssSelector;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.sleep;
@@ -16,12 +15,12 @@ public class PurchaseFormPage {
     private final SelenideElement expiryMonthField = $(".input__box input[type='text'][maxlength='2'][placeholder='08']");
     private final SelenideElement expiryYearField = $(".input__box input[type='text'][maxlength='2'][placeholder='22']");
     private final SelenideElement holderNameField = $("div.form-field:nth-of-type(3) input.input__control");
-    private final SelenideElement cvcField = $(".input__box input[type='text'][maxlength='3'][placeholder='999']");
-    private final SelenideElement proceedButton = $(".form-field .button.button_view_extra.button_size_m.button_theme_alfa-on-white");
+    private final SelenideElement cvcField = $(".input__box input[placeholder='999']");
+    private final SelenideElement proceedButton = $(".form-field button[type='button']");
     private final SelenideElement successNotification = $(".notification.notification_status_ok .notification__content");
     private final SelenideElement failureNotification = $(".notification.notification_status_error .notification__content");
     private final SelenideElement invalidFormat = $(".input__sub");
-    private final SelenideElement expirationDateIsIncorrect = $(".form-field:nth-of-type(2) .input-group__input-case_invalid:nth-of-type(1) .input__sub");
+    private final SelenideElement expirationDateIsIncorrect = $(".input-group__input-case.input-group__input-case_invalid .input__sub");
     private final SelenideElement fieldIsRequired = $(".form-field:nth-of-type(3) .input__sub");
     private final SelenideElement validityPeriod = $(".form-field:nth-of-type(2) .input__sub");
 
@@ -41,51 +40,58 @@ public class PurchaseFormPage {
 
     public void submitForm() {
         proceedButton.click();
-        sleep(5000);
     }
 
-    public String getResultMessage() {
-        return successNotification.exists() ?
-                successNotification.shouldBe(visible, Duration.ofSeconds(10)).getText() :
-                failureNotification.shouldBe(visible, Duration.ofSeconds(10)).getText();
+    public void expectSuccessMessage(String expectedText) {
+        $("#spinner").should(disappear, Duration.ofSeconds(5));
+        successNotification.shouldHave(exactText(expectedText)) // Проверка точного текста
+                .shouldBe(visible, Duration.ofSeconds(10));
     }
 
-    public void expectSuccessMessage() {
-        $("#spinner").should(disappear, Duration.ofSeconds(10));
-        successNotification.shouldBe(visible, Duration.ofSeconds(15));
+    public void expectFailureMessage(String expectedText) {
+        $("#spinner").should(disappear, Duration.ofSeconds(5));
+        failureNotification.shouldHave(exactText(expectedText)) // Проверка точного текста
+                .shouldBe(visible, Duration.ofSeconds(10));
     }
 
-    public void expectFailureMessage() {
-        $("#spinner").should(disappear, Duration.ofSeconds(10));
-        failureNotification.shouldBe(visible, Duration.ofSeconds(15));
+    public void checkInvalidFormatError(String expectedText) {
+        invalidFormat.shouldBe(visible, Duration.ofSeconds(10))
+                .shouldHave(exactText(expectedText));
     }
 
-    public String getInvalidFormatErrorText() {
-        if (invalidFormat.exists() && invalidFormat.isDisplayed()) {
-            return invalidFormat.getText();
-        }
-        return null;
+    public void checkExpirationDateIncorrectError(String expectedText) {
+        expirationDateIsIncorrect.shouldBe(visible, Duration.ofSeconds(10))
+                .shouldHave(exactText(expectedText));
     }
 
-    public String getExpirationDateIncorrectErrorText() {
-        if (expirationDateIsIncorrect.exists() && expirationDateIsIncorrect.isDisplayed()) {
-            return expirationDateIsIncorrect.getText();
-        }
-        return null;
+    public void checkFieldIsRequiredError(String expectedText) {
+        fieldIsRequired.shouldBe(visible, Duration.ofSeconds(10))
+                .shouldHave(exactText(expectedText));
     }
 
-    public String getFieldIsRequiredErrorText() {
-        if (fieldIsRequired.exists() && fieldIsRequired.isDisplayed()) {
-            return fieldIsRequired.getText();
-        }
-        return null;
+    public void checkValidityPeriodError(String expectedText) {
+        validityPeriod.shouldBe(visible, Duration.ofSeconds(10))
+                .shouldHave(exactText(expectedText));
     }
 
-    public String getValidityPeriodErrorText() {
-        if (validityPeriod.exists() && validityPeriod.isDisplayed()) {
-            return validityPeriod.getText();
-        }
-        return null;
+    public String getCardNumberFieldValue() {
+        return cardNumberField.val();
+    }
+
+    public String getExpiryMonthFieldValue() {
+        return expiryMonthField.val();
+    }
+
+    public String getExpiryYearFieldValue() {
+        return expiryMonthField.val();
+    }
+
+    public String getHolderNameFieldValue() {
+        return expiryMonthField.val();
+    }
+
+    public String getCvcFieldValue() {
+        return expiryMonthField.val();
     }
 }
 
